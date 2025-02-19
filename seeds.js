@@ -15,29 +15,49 @@ const seedProducts = [
         brand: 'Nike',
         price: 100,
         color: 'Black',
-        size: 'M'
+        size: 'M',
+        category: 'Shirt'
     },
     {
         name: 'Red Hoodie',
         brand: 'Adidas',
         price: 200,
         color: 'Red',
-        size: 'L'
+        size: 'L',
+        category: 'Shirt'
     },
     {
         name: 'Blue Jeans',
         brand: 'Levis',
         price: 150,
         color: 'Blue',
-        size: 'S'
+        size: 'S',
+        category: 'Pants'
     },
     {
         name: 'White Shirt',
         brand: 'Puma',
         price: 120,
         color: 'White',
-        size: 'XL'
-    }
+        size: 'XL',
+        category: 'Shirt'
+    },
+    {
+        name: 'Black Jeans',
+        brand: 'Levis',
+        price: 150,
+        color: 'Black',
+        size: 'M',
+        category: 'Pants'
+    },
+    {
+        name: 'White Shoes',
+        brand: 'Nike',
+        price: 250,
+        color: 'White',
+        size: 'L',
+        category: 'Shoes'
+    },
 ];
 
 Product.insertMany(seedProducts)
