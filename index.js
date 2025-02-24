@@ -6,6 +6,7 @@ const app = express();
 const ErrorHandler = require('./ErrorHandler');
 
 const Product = require('./models/product');
+const { error } = require('console');
 
 mongoose.connect('mongodb://127.0.0.1/shop_db')
     .then((result) => {
@@ -18,6 +19,12 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride('_method'));
+
+function wrapAsync(fn) {
+    return function(req, res, next) {
+        fn(req, res, next).catch(err => next(err));
+    }
+}
 
 app.get('/', (req, res) => {
     res.send('index');
@@ -44,46 +51,40 @@ app.post('/products', async (req, res) => {
     res.redirect(`/products/${product._id}`);
 });
 
-app.get('/products/:id', async (req, res, next) => {
-    try {
+app.get('/products/:id', wrapAsync(async (req, res) => {
         const { id } = req.params;
         const product = await Product.findById(id)
         res.render('products/show', { product });
-    } catch (error) {
-        next(new ErrorHandler('Product not found', 404));
-    }
-});
+}));
 
-app.get('/products/:id/edit', async (req, res, next) => {
-    try {
+app.get('/products/:id/edit', wrapAsync(async (req, res) => {
         const { id } = req.params;
         const product = await Product.findById(id);
         res.render('products/edit', { product }); 
-    } catch (error) {
-        next(new ErrorHandler('Product not found', 404));
-    }
-    
-});
+}));
 
-app.put('/products/:id', async (req, res, next) => {
-    try {
+app.put('/products/:id', wrapAsync(async (req, res) => {
         const { id } = req.params;
         const product = await Product.findByIdAndUpdate(id, req.body, { runValidators: true});
-        res.redirect(`/products/${product._id}`);
-    } catch (error) {
-        next(new ErrorHandler('Product not found', 404));
-    }
-    
-});
+        res.redirect(`/products/${product._id}`); 
+}));
 
-app.delete('/products/:id', async (req, res, next) => {
-    try {
+app.delete('/products/:id', wrapAsync(async (req, res) => {
         const { id } = req.params;
         await Product.findByIdAndDelete(id);
         res.redirect('/products');  
-    } catch (error) {
-        next(new ErrorHandler('Product not found', 404)); 
+}));
+
+app.use((err, req, res, next) => {
+    if(err.name === 'ValidationError') {
+        err.status = 400;
+        err.message = 'Validation Error';
     }
+    if(err.name === 'CastError') {
+        err.status = 404;
+        err.message = 'Product not found';
+    }
+    next(err);
 });
 
 app.use((err, req, res, next) => {
